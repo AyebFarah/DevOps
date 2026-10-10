@@ -5,6 +5,7 @@ pipeline {
         DOCKERHUB_USER = 'ayebfarah'
         IMAGE_NAME     = "${DOCKERHUB_USER}/counter-app"
         IMAGE_TAG      = "${env.BUILD_NUMBER}"
+        APP_DIR        = 'Conteneurisation et Orchestration Micro-services/TP1_Docker'
     }
 
     triggers {
@@ -26,16 +27,18 @@ pipeline {
 
         stage('Build & Tests unitaires') {
             steps {
-                sh '''
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip install --no-cache-dir -r requirements.txt pytest
-                    python -m pytest -v --junitxml=test-results.xml
-                '''
+                dir("${APP_DIR}") {
+                    sh '''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        python -m pip install --no-cache-dir -r requirements.txt pytest
+                        python -m pytest -v --junitxml=test-results.xml
+                    '''
+                }
             }
             post {
                 always {
-                    junit 'test-results.xml'
+                    junit allowEmptyResults: true, testResults: "${APP_DIR}/test-results.xml"
                 }
             }
         }
@@ -48,9 +51,9 @@ pipeline {
                 }
             }
             steps {
-                sh '''
-                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest .
-                '''
+                dir("${APP_DIR}") {
+                    sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest .'
+                }
             }
         }
 
@@ -81,10 +84,10 @@ pipeline {
             sh 'docker logout || true'
         }
         success {
-            echo "Image publiée : ${IMAGE_NAME}:${IMAGE_TAG}"
+            echo "Image publiee : ${IMAGE_NAME}:${IMAGE_TAG}"
         }
         failure {
-            echo 'Pipeline en échec : consulter les logs.'
+            echo 'Pipeline en echec : consulter les logs.'
         }
     }
 }
