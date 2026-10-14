@@ -27,7 +27,7 @@ def index():
         return "Erreur : impossible de joindre Redis (db-service).\n", 503
     container_id = socket.gethostname()
     return (
-        f"Bonjour tout le monde ! Cette page a été vue {hits} fois. "
+        f"Hi tout le monde ! Cette page a été vue {hits} fois. "
         f"Je suis le conteneur {container_id}\n"
     )
 
