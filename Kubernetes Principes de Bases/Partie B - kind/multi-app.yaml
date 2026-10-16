@@ -1,0 +1,68 @@
+# Partie 5 : application multi-conteneurs exposée par un Service ClusterIP et un Ingress
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multi-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: multi-app
+  template:
+    metadata:
+      labels:
+        app: multi-app
+    spec:
+      volumes:
+      - name: html                 # volume partagé entre les 2 conteneurs du pod
+        emptyDir: {}
+      containers:
+      - name: web                  # conteneur 1 : sert la page
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+      - name: content-writer       # conteneur 2 (sidecar) : réécrit la page toutes les 5 s
+        image: busybox:1.37
+        command: ["sh", "-c"]
+        args:
+        - |
+          while true; do
+            echo "<h1>Hello DevOps - application multi-conteneurs</h1><p>Pod : $(hostname)</p><p>Mis a jour par le sidecar : $(date)</p>" > /html/index.html
+            sleep 5
+          done
+        volumeMounts:
+        - name: html
+          mountPath: /html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-app
+spec:
+  type: ClusterIP
+  selector:
+    app: multi-app
+  ports:
+  - port: 80
+    targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: multi-app
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: localhost
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: multi-app
+            port:
+              number: 80

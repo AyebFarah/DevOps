@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app-v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-app
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: web-app        # même label que la v1 : le Service web-app envoie aussi du trafic ici
+        version: v2
+    spec:
+      containers:
+      - name: httpd
+        image: httpd:2.4
+        command: ["sh", "-c", "echo '<h1>v2 canary</h1>' > /usr/local/apache2/htdocs/index.html && httpd-foreground"]
+        ports:
+        - containerPort: 80
