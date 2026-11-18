@@ -8,10 +8,10 @@ resources:
   - loadgen.yaml
 replicas:
   - name: podinfo
-    count: 3
+    count: 4
 images:
   - name: ghcr.io/stefanprodan/podinfo   # tag modifié par les commits de déploiement
-    newTag: 6.16.0
+    newTag: 6.17.0
 patches:
   - path: service-nodeport.yaml
   - target: { kind: Deployment, name: podinfo }
