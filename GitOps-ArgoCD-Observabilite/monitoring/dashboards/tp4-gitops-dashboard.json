@@ -516,7 +516,9 @@
               "repo": true,
               "dest_server": true,
               "autosync_enabled": true,
-              "operation": true
+              "operation": true,
+              "exported_namespace": true,
+              "phase": true
             },
             "indexByName": {
               "name": 0,
