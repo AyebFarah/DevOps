@@ -132,6 +132,11 @@ alertes `ALERTS{alertname=~"TP4.*", alertstate="firing"}`.
 | `TP4PodImagePullError` (critical) | `max by (namespace, pod, container) (kube_pod_container_status_waiting_reason{reason=~"ErrImagePull\|ImagePullBackOff"}) == 1` | 2 min |
 | `TP4PodCrashLooping` (critical) | `... {reason="CrashLoopBackOff"} == 1` | 2 min |
 
+## Rapport et captures
+
+- Rapport PDF : `TP4 Devops GitOps ArgoCD Observabilite Hanine BEN AMOR Farah AYEB Emna DRIHEM Yasmine FERJANI.pdf`
+- Captures réelles (terminal et interfaces Web ArgoCD / Grafana / Prometheus / podinfo) : `captures/`
+
 ## Scénarios de démonstration
 
 | # | Scénario | Action |
