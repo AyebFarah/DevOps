@@ -1,0 +1,37 @@
+# Petit générateur de trafic pour alimenter les métriques HTTP de podinfo
+# (~4 req/s dont ~5 % d'erreurs 500 volontaires pour le panneau "taux d'erreurs").
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadgen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loadgen
+  template:
+    metadata:
+      labels:
+        app: loadgen
+    spec:
+      containers:
+        - name: loadgen
+          image: curlimages/curl:8.11.1
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              i=0
+              while true; do
+                i=$((i+1))
+                if [ $((i % 20)) -eq 0 ]; then p=/status/500; else p=/; fi
+                curl -s -o /dev/null http://podinfo:9898$p || true
+                sleep 0.25
+              done
+          resources:
+            requests: { cpu: 5m, memory: 8Mi }
+            limits: { cpu: 50m, memory: 32Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 100
+            capabilities: { drop: ["ALL"] }

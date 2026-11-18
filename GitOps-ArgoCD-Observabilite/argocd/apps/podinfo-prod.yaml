@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: podinfo-prod
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: tp4
+  source:
+    repoURL: https://github.com/AyebFarah/DevOps.git
+    targetRevision: main
+    path: GitOps-ArgoCD-Observabilite/apps/podinfo/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: podinfo-prod
+  revisionHistoryLimit: 10
+  syncPolicy:
+    automated:
+      prune: true      # supprime du cluster ce qui a été supprimé de Git
+      selfHeal: true   # annule toute modification manuelle (drift)
+    syncOptions:
+      - CreateNamespace=true
+      - SkipDryRunOnMissingResource=true   # le CRD ServiceMonitor arrive avec la stack monitoring
+    retry:
+      limit: 10
+      backoff: { duration: 10s, factor: 2, maxDuration: 3m }

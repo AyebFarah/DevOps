@@ -1,0 +1,17 @@
+# Configuration d'observabilité déployée par l'Application ArgoCD "monitoring-config".
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+resources:
+  - servicemonitors-argocd.yaml
+  - prometheusrule-tp4.yaml
+# Le dashboard est livré sous forme de ConfigMap : le sidecar de Grafana détecte le label
+# grafana_dashboard=1 et l'importe automatiquement (aucun clic dans l'UI -> 100 % GitOps).
+configMapGenerator:
+  - name: tp4-gitops-dashboard
+    files:
+      - dashboards/tp4-gitops-dashboard.json
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"

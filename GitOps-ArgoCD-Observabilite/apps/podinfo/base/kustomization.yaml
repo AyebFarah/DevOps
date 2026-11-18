@@ -1,0 +1,17 @@
+# Base commune de l'application podinfo (microservice Go instrumenté Prometheus).
+# Les overlays (dev, prod) ne surchargent que ce qui change d'un environnement à l'autre.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+labels:
+  - pairs:
+      app.kubernetes.io/name: podinfo
+      app.kubernetes.io/part-of: tp4-gitops
+    includeSelectors: false
+resources:
+  - deployment.yaml
+  - service.yaml
+  - servicemonitor.yaml
+images:
+  - name: podinfo
+    newName: ghcr.io/stefanprodan/podinfo
+    newTag: 6.16.0

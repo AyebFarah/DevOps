@@ -1,0 +1,31 @@
+# Pattern App-of-Apps : cette unique Application (appliquée une seule fois à la main)
+# déploie toutes les autres Applications décrites dans argocd/apps/.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/AyebFarah/DevOps.git
+    targetRevision: main
+    path: GitOps-ArgoCD-Observabilite/argocd/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - RespectIgnoreDifferences=true
+  # Autorise la désactivation TEMPORAIRE de l'auto-sync d'une application fille
+  # (nécessaire pour un rollback) sans que la racine ne la réactive aussitôt.
+  ignoreDifferences:
+    - group: argoproj.io
+      kind: Application
+      jqPathExpressions:
+        - .spec.syncPolicy.automated

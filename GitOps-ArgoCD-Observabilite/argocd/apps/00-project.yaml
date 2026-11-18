@@ -1,0 +1,21 @@
+# AppProject dédié : limite les dépôts sources et les namespaces cibles autorisés
+# (moindre privilège, au lieu du projet "default" ouvert à tout).
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: tp4
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  description: TP4 GitOps - podinfo + stack d'observabilité
+  sourceRepos:
+    - https://github.com/AyebFarah/DevOps.git
+    - https://prometheus-community.github.io/helm-charts
+  destinations:
+    - { server: https://kubernetes.default.svc, namespace: podinfo-dev }
+    - { server: https://kubernetes.default.svc, namespace: podinfo-prod }
+    - { server: https://kubernetes.default.svc, namespace: monitoring }
+    - { server: https://kubernetes.default.svc, namespace: kube-system }
+  clusterResourceWhitelist:
+    - { group: "*", kind: "*" }   # CRDs, ClusterRoles et Namespaces de kube-prometheus-stack

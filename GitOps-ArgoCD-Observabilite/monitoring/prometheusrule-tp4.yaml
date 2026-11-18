@@ -1,0 +1,50 @@
+# Règles d'alerte du TP4, évaluées par Prometheus et visibles dans Grafana (Alerting)
+# et dans Alertmanager.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tp4-gitops-alerts
+spec:
+  groups:
+    - name: tp4-argocd
+      rules:
+        - alert: TP4ArgoAppDegraded
+          # argocd_app_info vaut 1 pour chaque application, avec ses statuts en labels.
+          expr: max by (name, dest_namespace) (argocd_app_info{health_status="Degraded"}) == 1
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Application ArgoCD {{ $labels.name }} en état Degraded"
+            description: "L'application {{ $labels.name }} ({{ $labels.dest_namespace }}) est Degraded depuis plus de 2 minutes."
+        - alert: TP4ArgoAppOutOfSync
+          expr: max by (name, dest_namespace) (argocd_app_info{sync_status="OutOfSync"}) == 1
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Application ArgoCD {{ $labels.name }} OutOfSync"
+            description: "L'état du cluster diffère de Git depuis plus de 2 minutes pour {{ $labels.name }}."
+    - name: tp4-workloads
+      rules:
+        - alert: TP4PodImagePullError
+          # Agrégation sans le label "reason" : un conteneur qui alterne ErrImagePull et
+          # ImagePullBackOff forme une seule série continue (le "for" n'est pas réinitialisé).
+          expr: |
+            max by (namespace, pod, container) (
+              kube_pod_container_status_waiting_reason{reason=~"ErrImagePull|ImagePullBackOff"}
+            ) == 1
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} bloqué en ImagePullBackOff"
+            description: "Le conteneur {{ $labels.container }} ne parvient pas à télécharger son image depuis plus de 2 minutes."
+        - alert: TP4PodCrashLooping
+          expr: max by (namespace, pod, container) (kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"}) == 1
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} en CrashLoopBackOff"
+            description: "Le conteneur {{ $labels.container }} redémarre en boucle depuis plus de 2 minutes."

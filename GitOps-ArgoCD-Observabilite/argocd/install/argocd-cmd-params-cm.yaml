@@ -1,0 +1,7 @@
+# UI servie en HTTP (en production, le TLS serait terminé par un Ingress ; ici cluster de TP local).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cmd-params-cm
+data:
+  server.insecure: "true"

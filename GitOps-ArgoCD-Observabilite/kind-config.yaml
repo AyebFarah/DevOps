@@ -1,0 +1,15 @@
+# Cluster kind du TP4 : 1 control-plane + 1 worker.
+# Les NodePort des interfaces Web sont publiés sur localhost (Windows) :
+#   30080 ArgoCD UI | 30300 Grafana | 30090 Prometheus | 30093 Alertmanager | 30898 podinfo (prod)
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: tp4-gitops
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - { containerPort: 30080, hostPort: 30080 }
+      - { containerPort: 30300, hostPort: 30300 }
+      - { containerPort: 30090, hostPort: 30090 }
+      - { containerPort: 30093, hostPort: 30093 }
+      - { containerPort: 30898, hostPort: 30898 }
+  - role: worker

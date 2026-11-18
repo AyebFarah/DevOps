@@ -1,0 +1,45 @@
+# Scrape des endpoints internes d'ArgoCD (control plane GitOps).
+# Les Services *-metrics sont fournis par le manifeste d'installation officiel.
+---
+# application-controller : argocd_app_info, argocd_app_sync_total, argocd_app_reconcile, argocd_kubectl_exec...
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: argocd-metrics
+spec:
+  namespaceSelector: { matchNames: [argocd] }
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-metrics
+  endpoints:
+    - port: metrics
+      interval: 15s
+---
+# argocd-server (API + UI) : argocd_redis_request_total, grpc_server_handled_total...
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: argocd-server-metrics
+spec:
+  namespaceSelector: { matchNames: [argocd] }
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-server-metrics
+  endpoints:
+    - port: metrics
+      interval: 15s
+---
+# repo-server (clone Git + rendu Kustomize/Helm) : argocd_git_request_total,
+# argocd_git_request_duration_seconds, argocd_repo_pending_request_total...
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: argocd-repo-server-metrics
+spec:
+  namespaceSelector: { matchNames: [argocd] }
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-repo-server
+  endpoints:
+    - port: metrics
+      interval: 15s

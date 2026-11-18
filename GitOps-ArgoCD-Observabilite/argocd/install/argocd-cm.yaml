@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+data:
+  # Polling Git toutes les 30 s (défaut 120 s) pour la démo : un webhook GitHub
+  # ne peut pas joindre un cluster local non exposé sur Internet.
+  timeout.reconciliation: 30s
+  # Accès anonyme en LECTURE SEULE (cf. argocd-rbac-cm) pour afficher le tableau de bord
+  # pendant la soutenance. Les actions (sync, rollback) exigent le compte admin.
+  users.anonymous.enabled: "true"

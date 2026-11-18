@@ -1,0 +1,10 @@
+# En prod, le service est exposé en NodePort 30898 (publié sur localhost par kind).
+apiVersion: v1
+kind: Service
+metadata:
+  name: podinfo
+spec:
+  type: NodePort
+  ports:
+    - { name: http, port: 9898, targetPort: http, nodePort: 30898 }
+    - { name: http-metrics, port: 9797, targetPort: http-metrics }

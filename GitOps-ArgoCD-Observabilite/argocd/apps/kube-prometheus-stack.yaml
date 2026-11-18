@@ -1,0 +1,67 @@
+# Prometheus Operator + Prometheus + Alertmanager + Grafana + kube-state-metrics + node-exporter,
+# déployés par ArgoCD depuis le chart Helm officiel (version épinglée).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: tp4
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: 93.4.0
+    helm:
+      releaseName: kps
+      valuesObject:
+        fullnameOverride: kps
+        # Composants du control plane non joignables dans kind -> désactivés (évite des alertes parasites)
+        kubeControllerManager: { enabled: false }
+        kubeScheduler: { enabled: false }
+        kubeEtcd: { enabled: false }
+        kubeProxy: { enabled: false }
+        prometheus:
+          service: { type: NodePort, nodePort: 30090 }
+          prometheusSpec:
+            # Découvre TOUS les ServiceMonitor / PodMonitor / PrometheusRule du cluster,
+            # pas seulement ceux portant le label "release: kps".
+            serviceMonitorSelectorNilUsesHelmValues: false
+            podMonitorSelectorNilUsesHelmValues: false
+            ruleSelectorNilUsesHelmValues: false
+            scrapeInterval: 15s
+            evaluationInterval: 15s
+            retention: 2d
+            resources:
+              requests: { cpu: 100m, memory: 400Mi }
+        alertmanager:
+          service: { type: NodePort, nodePort: 30093 }
+        grafana:
+          service: { type: NodePort, nodePort: 30300 }
+          # Mot de passe admin hors de Git : secret créé au bootstrap (cf. README).
+          admin:
+            existingSecret: grafana-admin
+            userKey: admin-user
+            passwordKey: admin-password
+          grafana.ini:
+            auth.anonymous:
+              enabled: true
+              org_role: Viewer     # lecture seule pour l'affichage pendant la démo
+          defaultDashboardsTimezone: browser
+          sidecar:
+            dashboards:
+              enabled: true
+              label: grafana_dashboard
+              labelValue: "1"
+              searchNamespace: ALL
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true    # CRDs du Prometheus Operator trop volumineux pour l'apply client

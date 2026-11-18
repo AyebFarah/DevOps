@@ -1,0 +1,13 @@
+# Installation (bootstrap) d'ArgoCD v3.6.1 + personnalisation déclarative.
+#   kubectl create namespace argocd
+#   kubectl apply --server-side --force-conflicts -k argocd/install
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argocd
+resources:
+  - https://raw.githubusercontent.com/argoproj/argo-cd/v3.6.1/manifests/install.yaml
+patches:
+  - path: argocd-cmd-params-cm.yaml
+  - path: argocd-cm.yaml
+  - path: argocd-rbac-cm.yaml
+  - path: argocd-server-service.yaml
