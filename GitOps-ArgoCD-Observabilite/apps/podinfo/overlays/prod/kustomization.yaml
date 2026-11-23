@@ -8,7 +8,7 @@ resources:
   - loadgen.yaml
 replicas:
   - name: podinfo
-    count: 4
+    count: 6
 images:
   - name: ghcr.io/stefanprodan/podinfo   # tag modifié par les commits de déploiement
     newTag: 6.17.0
@@ -18,4 +18,4 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/env/1/value
-        value: "TP4 GitOps - PROD"
+        value: "TP4 GitOps - PROD v2"
