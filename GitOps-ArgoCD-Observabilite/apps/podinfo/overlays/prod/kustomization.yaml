@@ -1,5 +1,4 @@
-# Overlay PROD : c'est cet overlay que l'on modifie pendant les scénarios de démonstration
-# (nombre de réplicas, tag d'image). Toute modification passe par un commit Git.
+
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: podinfo-prod
@@ -8,9 +7,9 @@ resources:
   - loadgen.yaml
 replicas:
   - name: podinfo
-    count: 6
+    count: 2
 images:
-  - name: ghcr.io/stefanprodan/podinfo   # tag modifié par les commits de déploiement
+  - name: ghcr.io/stefanprodan/podinfo
     newTag: 6.17.0
 patches:
   - path: service-nodeport.yaml
